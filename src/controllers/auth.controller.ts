@@ -73,7 +73,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      res.status(400).json({ error: "Invalid email or password." });
+      res.status(400).json({ error: "Invalid username or password." });
       return;
     }
     const resUser = await User.findOne(user._id).select("-password");
@@ -93,11 +93,21 @@ export const logOut = (req: Request, res: Response) => {
   }
 };
 
-export const getMe = async(req:CustomRequest , res:Response)=>{
+export const getMe = async (req: CustomRequest, res: Response) => {
   try {
-    const user = await User.findById(req.user?._id).select("-password");
-    res.status(200).json(user)
+    console.log("called");
+    
+      if (!req.user?._id) {
+          return res.status(400).json({ error: "User ID is missing" });
+      }
+
+      const user = await User.findById(req.user._id).select("-password");
+      if (!user) {
+          return res.status(404).json({ error: "User not found" });
+      }
+
+      res.status(200).json(user);
   } catch (error) {
-    errorHandler(error ,res)
+      errorHandler(error, res);
   }
-}
+};
